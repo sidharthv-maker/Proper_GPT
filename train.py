@@ -8,8 +8,9 @@ from torch.utils.data import DataLoader
 import wandb
 #wandb is used for tracking and plotting the training runs, useful for checking how the run is going
 
-with open("input.txt", "r") as f:
-    corpus = f.read()
+from datasets import load_dataset
+dataset = load_dataset("roneneldan/TinyStories", split="train")
+corpus = " ".join(dataset["text"][:50000])
 
 enc = tiktoken.get_encoding("gpt2")
 encoded = enc.encode(corpus)
