@@ -79,7 +79,7 @@ class TinyGPT(nn.Module):
         x = x[:, :self.seq_len]
         tok = self.emb(x)
         _ , T, _ = tok.shape
-        pos = self.posemb(torch.arange(T))
+        pos = self.posemb(torch.arange(T, device=x.device))
         x = tok + pos  
         for block in self.mod:
             x = block(x)
