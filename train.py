@@ -1,4 +1,5 @@
 import torch
+import tiktoken
 import torch.nn as nn
 from model import TinyGPT
 from datapip import TextDataset
@@ -10,17 +11,13 @@ import wandb
 with open("input.txt", "r") as f:
     corpus = f.read()
 
-rules = bpe(corpus, n=100)
-#to prevent running bpe every single time
-import json
-with open("tokenizer.json", "w") as f:
-    json.dump(rules, f)
+enc = tiktoken.get_encoding("gpt2")
+encoded = enc.encode(corpus)
+vocab_size = enc.n_vocab
 
-vocab = build_vocab(rules)
-encoded = encode(corpus, rules, vocab)
 dataset = TextDataset(encoded,128)
 dset = DataLoader(dataset, batch_size=128, shuffle=True)
-model = TinyGPT(256,8,128,len(vocab),4)
+model = TinyGPT(256, 8, 128, vocab_size, 4)
 #All the scaler related lines are only needed to run on colab, not needed otherwise
 scaler = torch.amp.GradScaler('cuda')
 optim = torch.optim.Adam(params=model.parameters(), lr=0.001)
@@ -51,7 +48,7 @@ for epoch in range(150):
         i += 1
         with torch.amp.autocast('cuda'):
             output = model(x)
-            loss = lossfn(output.view(-1,len(vocab)),y.view(-1))
+            loss = lossfn(output.view(-1,vocab_size), y.view(-1))
             loss = loss/accum
         scaler.scale(loss).backward()
         if (i+1)%accum == 0:

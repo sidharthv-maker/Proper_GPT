@@ -1,25 +1,22 @@
 import torch
 import json
 import torch.nn as nn
-from bpetok import bpe,build_vocab,encode,decode
+import tiktoken
 from datapip import TextDataset
 from model import TinyGPT
 
 with open("input.txt", "r") as f:
     corpus = f.read()
 
-with open("tokenizer.json", "r") as f:
-    rules = json.load(f)
+enc = tiktoken.get_encoding("gpt2")
+vocab_size = enc.n_vocab
 
-vocab = build_vocab(rules)
-encoded = encode(corpus, rules, vocab)
-
-model = TinyGPT(256,8,128,len(vocab),4)
+model = TinyGPT(256,8,128,vocab_size,4)
 check = torch.load("checkpoint_epoch150.pt")
 model.load_state_dict(check["model_state_dict"])
 
 prompt = input("Enter your prompt: ")
-context = torch.tensor([encode(prompt,rules,vocab)])
+context = torch.tensor([enc.encode(prompt)])
 
 model.eval()
 times = 500
@@ -32,4 +29,4 @@ for _ in range(times):
     next_token = torch.multinomial(probs, 1)
     context = torch.cat([context, next_token], dim=1)
     
-print(decode(context[0].tolist()))
+print(enc.decode(context[0].tolist()))
