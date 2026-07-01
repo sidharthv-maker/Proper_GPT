@@ -57,12 +57,3 @@ def decode(lst):
     for cha in lst:
         word += cha
     return word
-
-corpus = "aaabdaaabac"
-rules = bpe(corpus, n=5)
-vocab = build_vocab(rules)
-encoded = encode("aaab", rules, vocab)
-decoded = decode([r[0]+r[1] for r in rules[:3]])
-print(rules)
-print(vocab)
-print(encoded)
