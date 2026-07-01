@@ -17,8 +17,8 @@ encoded = enc.encode(corpus)
 vocab_size = enc.n_vocab
 
 dataset = TextDataset(encoded,128)
-dset = DataLoader(dataset, batch_size=128, shuffle=True)
-model = TinyGPT(256, 8, 128, vocab_size, 4)
+dset = DataLoader(dataset, batch_size=32, shuffle=True)
+model = TinyGPT(256, 8, 128, vocab_size, 6)
 #All the scaler related lines are only needed to run on colab, not needed otherwise
 scaler = torch.amp.GradScaler('cuda')
 optim = torch.optim.Adam(params=model.parameters(), lr=0.001)
