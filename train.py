@@ -7,6 +7,7 @@ from bpetok import bpe, build_vocab, encode
 from torch.utils.data import DataLoader
 import wandb
 #wandb is used for tracking and plotting the training runs, useful for checking how the run is going
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 from datasets import load_dataset
 dataset = load_dataset("roneneldan/TinyStories", split="train")
@@ -18,7 +19,7 @@ vocab_size = enc.n_vocab
 
 dataset = TextDataset(encoded,128)
 dset = DataLoader(dataset, batch_size=32, shuffle=True)
-model = TinyGPT(256, 8, 128, vocab_size, 6)
+model = TinyGPT(256, 8, 128, vocab_size, 6).to(device)
 #All the scaler related lines are only needed to run on colab, not needed otherwise
 scaler = torch.amp.GradScaler('cuda')
 optim = torch.optim.Adam(params=model.parameters(), lr=0.001)
@@ -46,6 +47,7 @@ for epoch in range(150):
     total_loss = 0
     i = 0
     for x,y in dset:
+        x,y = x.to(device), y.to(device)
         i += 1
         with torch.amp.autocast('cuda'):
             output = model(x)
